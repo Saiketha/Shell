@@ -1,0 +1,389 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: 10d4b0bdbb5815b14ba21db28a945f8030e9ce962b6966c58c1238622be8df2d
+    cni.projectcalico.org/podIP: 10.244.1.130/32
+    cni.projectcalico.org/podIPs: 10.244.1.130/32
+    injector.medallia.com/atlasconfig-status: mutated
+    logging.medallia.com/appid: lguplus-fe1
+    logging.medallia.com/pipeline-input: 'true'
+    logging.medallia.com/pipeline-output-file: 'true'
+    logging.medallia.com/pipeline-output-loki: 'true'
+    logging.medallia.com/pipeline-output-s3: 'true'
+    logging.medallia.com/pipeline-output-sumologic: 'true'
+    metapod.medallia.com/reason: >-
+      no app.kubernetes.io/name annotation present, no app.kubernetes.io/part-of
+      annotation present, skipping owner patch. name label is already set to
+      express-fe, skipping patch. part-of label is already set to express,
+      skipping patch. component label is already set to fe, skipping patch. no
+      app.kubernetes.io/name annotation present, skipping backstage component
+      URL patch. no app.kubernetes.io/part-of annotation present, skipping
+      backstage system URL patch. version label is already set to e689.155,
+      skipping patch
+    prioritea.medallia.com/class-assigned: accounts
+    prioritea.medallia.com/reason: name matches rule tenant-.*-prod-.*-fe\d+$
+  creationTimestamp: '2024-06-20T02:49:01Z'
+  labels:
+    app: lguplus-fe1
+    app.kubernetes.io/component: fe
+    app.kubernetes.io/instance: lguplus
+    app.kubernetes.io/managed-by: express-operator
+    app.kubernetes.io/name: express-fe
+    app.kubernetes.io/part-of: express
+    app.kubernetes.io/version: e689.155
+    app.medallia.com/environment: production
+    app.medallia.com/team: sre
+    controller.medallia.com/hash: 3547c281-2221-427f-941d-26d8e6febacb
+    deployer.medallia.com/update-atlas-config: 'true'
+    express.medallia.com/cluster-name: lguplus
+    express.medallia.com/deployment-revision: 5d851844dd696def7f507051f46cd5a52a5d8a09
+    express.medallia.com/instance-type: fe
+    express.medallia.com/source-deployer: argocd
+    express.medallia.com/version: express-e689.155
+    helm.sh/chart: express-2.0.2
+  name: lguplus-fe1
+  namespace: tenant-123956-prod
+  ownerReferences:
+    - apiVersion: express.medallia.com/v2alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Frontend
+      name: lguplus-fe1
+      uid: 5b585f86-778e-4da1-9fd0-2f2a89186fb2
+  resourceVersion: '818759052'
+  uid: b6a552ad-51fa-44b9-8312-eee45a7c15b0
+spec:
+  containers:
+    - command:
+        - /bin/bash
+        - '-c'
+        - >-
+          /bin/atlas-config --config-version ${CONFIG_CHANGESET} --application
+          express --service ${SERVICE_NAME} --tenant ${TENANT} --environment
+          ${CONFIG_ENVIRONMENT} && exec /express/entrypoint.pl
+          -Xms${HEAP_MEMORY_GIB}g -Xmx${HEAP_MEMORY_GIB}g
+          -Dsun.net.inetaddr.negative.ttl=10 -Dsun.net.inetaddr.ttl=60
+          -Ds3cachestore.signerOverride=AWSS3V4SignerType
+          -Djdk.nio.maxCachedBufferSize=262144 express.web.ExpressJettyRunner
+          9100
+      env:
+        - name: express_node_name
+          value: lguplus-fe1
+        - name: express_sla_tag
+          value: production
+        - name: express_short_host_name
+          value: lguplus
+        - name: EXPRESS_VERSION
+          value: express-e689.155
+        - name: EXPRESS_DEPLOYMENT_REVISION
+        - name: SERVICE_NAME
+          value: fe1.fe.express
+        - name: CONFIG_CHANGESET
+          value: 3e3d71f2b0a978be089df556e089087ec49fc0be
+        - name: EXPRESS_VERSION
+          value: express-e689.155
+        - name: EXPRESS_DEPLOYMENT_REVISION
+          value: 5d851844dd696def7f507051f46cd5a52a5d8a09
+        - name: TENANT
+          value: lguplus
+        - name: HEAP_MEMORY_GIB
+          value: '82'
+        - name: MALLOC_ARENA_MAX
+          value: '2'
+        - name: MERCI_ATLAS_CONFIG_HOSTS
+          value: config-service.config-service
+        - name: CONFIG_ENVIRONMENT
+          value: icn1.medallia.com
+        - name: ATLAS_SVC_COMMON_CONFIG_VERSION
+          value: master
+        - name: ATLAS_TLS_ENABLED
+          value: 'true'
+        - name: ATLAS_COMPANY
+          value: lguplus
+        - name: ATLAS_CONFIG_ENVIRONMENT
+          value: icn1.medallia.com
+        - name: ATLAS_CONFIG_CLIENT_FLAG_URLS
+          value: 'http://config-service.config-service'
+      image: 'virtual-docker.martifactory.io/medallia/express:express-e689.155'
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+              - sh
+              - '-c'
+              - sleep 60
+      name: express
+      ports:
+        - containerPort: 9100
+          name: http
+          protocol: TCP
+        - containerPort: 9464
+          name: otlp-metrics
+          protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+            - sh
+            - '-c'
+            - >-
+              curl --silent 'http://localhost:9100/.admin?cmd=status' | grep
+              --quiet -e 'ready'
+        failureThreshold: 3
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 2
+        timeoutSeconds: 5
+      resources:
+        limits:
+          memory: 119398Mi
+        requests:
+          cpu: '2'
+          ephemeral-storage: 2Gi
+          memory: 119398Mi
+      securityContext:
+        privileged: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+        - mountPath: /express/workdir/shared
+          name: shared-workdir-0
+        - mountPath: /express/workdir/shared/feed-file-store
+          name: shared-workdir-1
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: kube-api-access-trmmp
+          readOnly: true
+        - mountPath: /usr/bin/atlas-config
+          name: atlas-config-updater
+          subPath: atlas-config
+    - command:
+        - /bin/bash
+        - '-c'
+        - ./run.sh
+      env:
+        - name: ATLAS_CONFIG_CLIENT_FLAG_URLS
+          value: 'http://config-service.config-service'
+      image: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/giraffe/telegraf:1.19.3-3
+      imagePullPolicy: IfNotPresent
+      name: telegraf-sidecar
+      ports:
+        - containerPort: 9273
+          name: metrics
+          protocol: TCP
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+      securityContext:
+        privileged: false
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: kube-api-access-trmmp
+          readOnly: true
+        - mountPath: /usr/bin/atlas-config
+          name: atlas-config-updater
+          subPath: atlas-config
+    - command:
+        - python3
+        - /scripts/start-maintenance-validator.py
+        - '-l'
+        - 'http://localhost:9100'
+        - '-t'
+        - fe
+      env:
+        - name: ATLAS_CONFIG_CLIENT_FLAG_URLS
+          value: 'http://config-service.config-service'
+      image: 'virtual-docker.artifactory.eng.medallia.com/medallia/express-utils:1.1.1'
+      imagePullPolicy: IfNotPresent
+      lifecycle: {}
+      name: maintenance
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: kube-api-access-trmmp
+          readOnly: true
+        - mountPath: /usr/bin/atlas-config
+          name: atlas-config-updater
+          subPath: atlas-config
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+    - name: regcred
+  initContainers:
+    - command:
+        - cp
+        - '-fr'
+        - /atlas-config-client
+        - /tmp/atlas-config
+      image: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/atlas-config-client:2.0.0
+      imagePullPolicy: IfNotPresent
+      name: atlas-config-updater
+      resources:
+        limits:
+          cpu: 100m
+          memory: 500Mi
+        requests:
+          cpu: 100m
+          memory: 500Mi
+      securityContext:
+        runAsUser: 1337
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+        - mountPath: /tmp
+          name: atlas-config-updater
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: kube-api-access-trmmp
+          readOnly: true
+  nodeName: 10.47.20.23
+  preemptionPolicy: Never
+  priority: 5000000
+  priorityClassName: accounts
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 60
+  tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+  topologySpreadConstraints:
+    - labelSelector:
+        matchLabels:
+          express.medallia.com/cluster-name: lguplus
+          express.medallia.com/instance-type: fe
+      maxSkew: 2
+      topologyKey: failure-domain.beta.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+    - labelSelector:
+        matchLabels:
+          express.medallia.com/cluster-name: lguplus
+      maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+  volumes:
+    - name: shared-workdir-0
+      nfs:
+        path: //lguplus
+        server: 10.47.9.243
+    - name: shared-workdir-1
+      nfs:
+        path: //feed-file-store
+        server: 10.47.13.5
+    - name: kube-api-access-trmmp
+      projected:
+        defaultMode: 420
+        sources:
+          - serviceAccountToken:
+              expirationSeconds: 3607
+              path: token
+          - configMap:
+              items:
+                - key: ca.crt
+                  path: ca.crt
+              name: kube-root-ca.crt
+          - downwardAPI:
+              items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace
+    - emptyDir:
+        medium: Memory
+      name: atlas-config-updater
+status:
+  conditions:
+    - lastProbeTime: null
+      lastTransitionTime: '2024-06-20T02:49:03Z'
+      status: 'True'
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: '2024-06-20T02:52:02Z'
+      status: 'True'
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: '2024-06-20T02:52:02Z'
+      status: 'True'
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: '2024-06-20T02:49:01Z'
+      status: 'True'
+      type: PodScheduled
+  containerStatuses:
+    - containerID: 'cri-o://276a451df7a36c7acd0d8a36cd1ecd718a102d6e696ef2e4bb5eeac596036ecd'
+      image: 'virtual-docker.martifactory.io/medallia/express:express-e689.155'
+      imageID: >-
+        virtual-docker.martifactory.io/medallia/express@sha256:fb70899bef8d385e514eeb240aebe484152af42c59b742c285d8e0bc9a783158
+      lastState: {}
+      name: express
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: '2024-06-20T02:49:03Z'
+    - containerID: 'cri-o://7e3916bfb76d2412eed0dcc92edeb6967aa8bd0ade20754b881a702798988c1b'
+      image: 'virtual-docker.artifactory.eng.medallia.com/medallia/express-utils:1.1.1'
+      imageID: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/express-utils@sha256:920cd89070b852af245db3468396dbd4e0ce7e23ab342fd8668a7432732d9b98
+      lastState: {}
+      name: maintenance
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: '2024-06-20T02:49:03Z'
+    - containerID: 'cri-o://ed968e30f7e31bd109f7cc29ff4c9b903f74dd09a74755aaef741518d3c783b5'
+      image: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/giraffe/telegraf:1.19.3-3
+      imageID: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/giraffe/telegraf@sha256:2c2886ea16f9d0831500d64671c5134b84d485c0e3d491e70866fdb433d188c2
+      lastState: {}
+      name: telegraf-sidecar
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: '2024-06-20T02:49:03Z'
+  hostIP: 10.47.20.23
+  initContainerStatuses:
+    - containerID: 'cri-o://7697a19ea5416771c5ca98d5b81c17c897e96adea0abeb49f4d7f7b1f0c2d0cf'
+      image: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/atlas-config-client:2.0.0
+      imageID: >-
+        virtual-docker.artifactory.eng.medallia.com/medallia/atlas-config-client@sha256:452d09958934f42fdebe39c6b790548583584e391d8d97ddaaba62906f3a295d
+      lastState: {}
+      name: atlas-config-updater
+      ready: true
+      restartCount: 0
+      state:
+        terminated:
+          containerID: >-
+            cri-o://7697a19ea5416771c5ca98d5b81c17c897e96adea0abeb49f4d7f7b1f0c2d0cf
+          exitCode: 0
+          finishedAt: '2024-06-20T02:49:02Z'
+          reason: Completed
+          startedAt: '2024-06-20T02:49:02Z'
+  phase: Running
+  podIP: 10.244.1.130
+  podIPs:
+    - ip: 10.244.1.130
+  qosClass: Burstable
+  startTime: '2024-06-20T02:49:01Z'
