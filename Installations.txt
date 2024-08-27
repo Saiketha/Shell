@@ -1,0 +1,87 @@
+INSTALLING GIT
+→  sudo apt -y install git
+→  git init
+
+INSTALLING AND CONFIGURING AWS CLI
+→  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+→  apt install unzip : Install unzip first 
+→  unzip awscliv2.zip
+→  sudo ./aws/install
+→  aws configure
+→  add your access and secret key(iam>security credentials)
+→  add region and output format too
+
+INSTALLING BASH
+→  sudo apt update
+→  sudo apt upgrade
+→  sudo apt install -y bash-completion
+ 
+INSTALLING JENKINS
+since Jenkins isjava based webserver or tool, and we need install java to use jenkins
+→  sudo apt update
+→  sudo apt install openjdk-11-jre -y
+→  java -version
+
+INSTALLING JENKINS
+→  curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+→  echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+→  sudo apt-get update
+→  sudo apt-get install jenkins
+→  Edit inbound rules and add 8080
+→  http://<ec2-instance-public-ip>:8080/
+→  add password
+
+DOCKER SLAVE CONFIGURATION
+→  sudo apt update
+→  sudo apt install docker.io
+→  sudo su - 
+→  usermod -aG docker jenkins
+→  usermod -aG docker ubuntu
+→  exit and reconnect ec2
+→  su - jenkins
+→  docker run hello-world
+→  install docker plugin in jenkins
+→  http://<ec2-instance-public-ip>:8080/restart
+
+INSTALLING DOCKER
+→  sudo apt update
+→  sudo apt install docker.io -y
+→  sudo systemctl status docker 
+→  docker run hello-world
+→  sudo usermod -aG docker ubuntu
+→  docker run hello-world
+→  exit and reconnect to ec2 
+→  docker run hello-world
+→  docker login
+
+INSTALLING KUBECTL
+→  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+→  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+→  kubectl version --client
+→  sudo apt update
+→  sudo apt install docker.io -y
+→  sudo systemctl status docker 
+→  sudo usermod -aG docker ubuntu
+ 
+INSTALLING MINIKUBE:
+→  curl -LO https://storage.googleapis.com/minikube/releases/latest/minikubelinux-amd64
+→  sudo install minikube-linux-amd64 /usr/local/bin/minikube
+→  minikube start --driver=docker 
+→  minikube config set driver docker
+→  minikube start
+→  minikube
+→  minikube ssh (logging into cluster)
+   curl ip
+   
+INSTALLING TERRAFORM 
+→  we can use code spaces it best way to work with terraform.
+→  install aws cli and configure it
+→  wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+→  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+→  sudo apt update 
+→  sudo apt install terraform -y
+   if none of them worked try 
+    sudo snap install terraform --classic
+		  
+uimp - security key
+→  cat /usr/share/keyrings/hashicorp-archive-keyring.gpg   
